@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field, validator
 import uuid
-import re
 from utils.validacion import eliminar_puntuacion, validar_nombre, validar_fecha, validar_hora
 
 class Crear_usuario(BaseModel):

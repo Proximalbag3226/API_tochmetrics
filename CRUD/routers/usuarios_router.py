@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 import uuid
-from models.users_model import *
+from models.users_model import Crear_usuario, EditarUsuario
 
 usuarios_list = []
 usuarios_route = APIRouter()
@@ -29,38 +29,33 @@ async def obtener_usuario():
     except Exception as e:
         HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER, detail=str(e))
 
-@usuarios_route.put('/modificar_usuarios', tags=["Usuarios"], status_code=status.HTTP_200_OK, response_description="Modificar un usuario registrado")
+@usuarios_route.put('/modificar_usuario/{id}', tags=["Usuarios"], status_code=status.HTTP_200_OK, response_description="Modificar un usuario registrado")
 async def modificar_usuario(id_usuario: uuid.UUID, editar_usuario: EditarUsuario)->EditarUsuario:
     try:
-        id = str(id_usuario)
         for usuario in usuarios_list:
-            if usuario.id == id:
+            if usuario.id == str(id_usuario):
                 usuario.usuario = editar_usuario.usuario
                 usuario.contraseña = editar_usuario.contraseña
                 usuario.nombre = editar_usuario.nombre
                 usuario.apellidos = editar_usuario.apellidos
                 usuario.correro = editar_usuario.correo
                 usuario.tipo = editar_usuario.tipo
-            else:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= "Usuario no encontrado")
-        content = [usuario.model_dump() for usuario in usuarios_list]
-        return JSONResponse(content=content, status_code=status.HTTP_200_OK)
+                return editar_usuario
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
     except ValueError:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="No se puede editar el usuario")
     except Exception as e:
         raise  HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
         
-@usuarios_route.delete('/borrar_usuario', tags=["Usuarios"], status_code=status.HTTP_200_OK, response_description="Borrar un usuario registrado")
-def borrar_usuario(id_usuario: uuid.UUID):
+@usuarios_route.delete('/borrar_usuario/{id}', tags=["Usuarios"], status_code=status.HTTP_200_OK, response_description="Borrar un usuario registrado")
+async def borrar_usuario(id_usuario: uuid.UUID):
     try:
         id = str(id_usuario)
         for usuario in usuarios_list:
             if usuario.id == id:
                 usuarios_list.remove(usuario)
-            else:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
-        content = [usuario.model_dump() for usuario in usuarios_list]
-        
-        return JSONResponse(content=content, status_code=status.HTTP_200_OK)
+                content = [usuario.model_dump() for usuario in usuarios_list]
+                return JSONResponse(content=content, status_code=status.HTTP_200_OK)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
     except:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error al intentar borrar el usuario")

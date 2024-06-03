@@ -1,14 +1,17 @@
-# Middleware para manejar errores HTTP (si es necesario)
-from fastapi import Request, APIRouter
+#Importamos lo nesesario para el funcionamiento del middleware 
+from fastapi import FastAPI, Request, Response, status
+from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse
-from fastapi import status
-
-app = APIRouter()
-
-@app.middleware('http')
-async def http_error_handler(request: Request, call_next):
-    try:
-        response = await call_next(request)
-        return response
-    except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class HTTP_error_handler(BaseHTTPMiddleware):
+    
+    def  __init__(self, app: FastAPI,) -> None:
+        super().__init__(app)
+    async def dispath(self, request:Request, callnext)-> Response:
+        try:
+            return await callnext(request)
+        except Exception as e:
+            content = f"Error: {str(e)}"
+            status_code = status.HTTP_403_FORBIDDEN
+            return JSONResponse(content=content, status_code=status_code)            
+        
+        

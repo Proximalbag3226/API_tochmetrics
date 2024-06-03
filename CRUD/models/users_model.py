@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, validator
 import uuid
-from utils.validacion import eliminar_puntuacion, validar_nombre, validar_fecha, validar_hora
+from utils.validacion import eliminar_puntuacion, validar_nombre
 
 class Crear_usuario(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -26,7 +26,7 @@ class Crear_usuario(BaseModel):
     }
 
     @validator('nombre', 'apellidos', 'tipo')
-    def validiar_nombres(cls, value):
+    def validar_nombres(cls, value):
         value = eliminar_puntuacion(value)
         return validar_nombre(value)
     

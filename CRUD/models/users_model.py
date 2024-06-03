@@ -1,51 +1,59 @@
-from fastapi import FastAPI, APIRouter, status, Depends, Request, Response
-from fastapi.responses import PlainTextResponse, FileResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 import uuid
 import re
+from utils.validacion import eliminar_puntuacion, validar_nombre, validar_fecha, validar_hora
 
-
-class Crear_empleado(BaseModel):
-    id: str = str(uuid.uuid4())
+class Crear_usuario(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     usuario: str
     contraseña: str
     nombre: str
     apellidos: str
     correo: str
+    tipo: str
 
     model_config = {
         'json_schema_extra': {
             'example': {
+                'id': str(uuid.uuid4()),
                 'usuario': 'EjemploU',
                 'contraseña':'EjemploC',
                 'nombre': 'Ejemplo',
                 'apellidos':'EjemploAp',
-                'correo' : 'ejemplo@gmail.com'
+                'correo' : 'ejemplo@gmail.com',
+                'tipo' : 'Ejemplotipo'
             }
         }
     }
 
-    @staticmethod
-    def eliminar_puntuacion(texto: str) -> str:
-        sin_signos = re.sub(r'[^\w\s]', '', texto)
-        return sin_signos.strip().lower()
-
-    @validator('nombre')
-    def validar_nombre(cls, value):
-        value = cls.eliminar_puntuacion(value)
-        if not isinstance(value, str):
-            raise ValueError("El campo debe ser un string")
-        elif len(value) < 5 or len(value) > 25:
-            raise ValueError("Los datos deben tener entre 5 y 25 caracteres")
-        return value
+    @validator('nombre', 'apellidos', 'tipo')
+    def validiar_nombres(cls, value):
+        value = eliminar_puntuacion(value)
+        return validar_nombre(value)
     
-    @validator('apellidos')
-    def validar_apellidos(cls, value):
-        value = cls.eliminar_puntuacion(value)
-        if not isinstance(value, str):
-            raise ValueError("El campo debe ser un string")
-        elif len(value) < 5 or len(value) > 25:
-            raise ValueError("Los datos deben tener entre 5 y 25 caracteres")
-        return value
+class EditarUsuario(BaseModel):
+    usuario: str
+    contraseña: str
+    nombre: str
+    apellidos: str
+    correo: str
+    tipo: str
+    
+    model_config = {
+        'json_schema_extra':{
+            'example':{
+                'usuario' : 'EjemploU',
+                'contraseña' : 'EjemploC',
+                'nombre' : 'Ejemplo',
+                'apellidos' : 'EjemploAp',
+                'correo' : 'ejemplo@gmail.com',
+                'tipo' :'Ejemplotipo'
+            }
+        }
+    }
+    
+    @validator('nombre', 'apellidos', 'tipo')
+    def validiar_nombres(cls, value):
+        value = eliminar_puntuacion(value)
+        return validar_nombre(value)
     

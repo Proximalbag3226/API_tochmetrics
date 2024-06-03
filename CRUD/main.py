@@ -6,13 +6,15 @@ import uuid
 import re
 from routers.partidos_router import partidos_route
 from datetime import datetime
+from routers.partidos_router import *
+from routers.usuarios_router import *
+from utils.error_handler import *
 
 app = FastAPI()
 
-# Configuración de CORS
 origins = [
-    "http://localhost:3000",  # Aquí coloca la URL de tu frontend
-    "https://tu-dominio-frontend.com",  # Si tienes un dominio en producción, agrégalo aquí
+    "http://localhost:3000", 
+    "https://tu-dominio-frontend.com"
 ]
 
 app.add_middleware(
@@ -76,7 +78,7 @@ class Crear_empleado(BaseModel):
             raise ValueError("Los datos deben tener entre 5 y 25 caracteres")
         return value
 class CrearPartido(BaseModel):
-    id: str = str(uuid.uuid4())
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     campo: str
     deportivo: str
     liga: str

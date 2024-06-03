@@ -1,11 +1,7 @@
-from fastapi import FastAPI, APIRouter, status, Depends, HTTPException
-from fastapi.responses import PlainTextResponse, FileResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, validator
-from models.partidos_model import *
+from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import JSONResponse
 import uuid
-import re
-from uuid import UUID
+from models.partidos_model import *
 
 partidos_list = []
 
@@ -36,18 +32,32 @@ async def obtener_partido():
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=e)
 
 @partidos_route.put('/editar_partido/{id}', tags=["Partidos"], status_code=status.HTTP_201_CREATED, response_description="Modificar un partido ya existente por ID")
-async def editar_partido(partido_id:UUID, editar_partido: CrearPartido) -> CrearPartido:
+async def editar_partido(partido_id:uuid.UUID, editar_partido: EditarPartido) -> EditarPartido:
     try:
-        for index, partido in enumerate(partidos_list):
-            if partido.id == str(partido_id):
-                partidos_list[index] = editar_partido
-                return editar_partido
+        id = str(partido_id)
+        for partido in partidos_list:
+            if partido.id == id:
+                partido.campo = editar_partido.campo
+                partido.deportivo = editar_partido.deportivo
+                partido.ligar = editar_partido.liga
+                partido.torneo = editar_partido.torneo
+                partido.categoria = editar_partido.categoria
+                partido.eq = editar_partido.eq
+                partido.ev = editar_partido.ev
+                partido.fecha = editar_partido.fecha
+                partido.arbitro = editar_partido.arbitro
+                partido.hora = editar_partido.hora
+            else:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= "Partido no encontrado")
+            return editar_partido
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Partido no encontrado")
-    except:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Partido no encontrado")
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="No se puede editar el partido")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 @partidos_route.delete('/eliminar_partido/{id}', tags = ["Partidos"], status_code=status.HTTP_200_OK, response_description="Eliminar un partido existente")
-async def eliminar_partido(id_partido: UUID) :
+async def eliminar_partido(id_partido: uuid.UUID) :
     try:
         id = str(id_partido)
         for partido in partidos_list:
@@ -58,4 +68,3 @@ async def eliminar_partido(id_partido: UUID) :
         return JSONResponse(content=content, status_code=status.HTTP_200_OK)
     except:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Partido no encontrado")
-        

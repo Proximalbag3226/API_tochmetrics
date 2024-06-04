@@ -3,6 +3,7 @@ from fastapi.responses import PlainTextResponse, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from routers.partidos_router import *
 from routers.usuarios_router import *
+from routers.estadisticas_router import *
 from utils.error_handler import *
 
 app = FastAPI()
@@ -20,7 +21,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Middleware para manejar errores HTTP (si es necesario)
 @app.middleware('http')
 async def http_error_handler(request: Request, call_next):
     try:
@@ -29,7 +29,6 @@ async def http_error_handler(request: Request, call_next):
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# Otros endpoints de ejemplo
 @app.get('/', tags=["Home"])
 def home():
     return PlainTextResponse(content="Home", status_code=status.HTTP_200_OK)
@@ -49,8 +48,6 @@ def get_customers(commons: dict = Depends(common_parameters)):
 def get_file():
     return FileResponse('lorem-ipsum.pdf')
 
-
-# Ruta de películas (ejemplo)
-# app.include_router(prefix='/movies', router=movie_router) # Descomentar si tienes el router de películas
 app.include_router(prefix='/usuarios', router=usuarios_route)
 app.include_router(prefix='/partidos', router=partidos_route)
+app.include_router(prefix='/estadisticas', router=estadisticas_route)

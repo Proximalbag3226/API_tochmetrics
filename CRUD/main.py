@@ -5,6 +5,7 @@ from routers.partidos_router import *
 from routers.usuarios_router import *
 from routers.estadisticas_router import *
 from utils.error_handler import *
+from routers.reportes_router import *
 
 app = FastAPI()
 
@@ -51,3 +52,4 @@ def get_file():
 app.include_router(prefix='/usuarios', router=usuarios_route)
 app.include_router(prefix='/partidos', router=partidos_route)
 app.include_router(prefix='/estadisticas', router=estadisticas_route)
+app.include_router(prefix='/reportes', router=reportes_route)

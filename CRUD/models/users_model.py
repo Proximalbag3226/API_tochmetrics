@@ -55,4 +55,16 @@ class EditarUsuario(BaseModel):
     def validiar_nombres(cls, value):
         value = eliminar_puntuacion(value)
         return validar_nombre(value)
+
+class LoginUsuario(BaseModel):
+    usuario: str
+    contraseña: str
     
+    model_config = {
+        'json_schema_extra':{
+            'example':{
+                'usuario': 'EjemploU',
+                'contraseña': 'EjemploC'
+            }
+        }
+    }

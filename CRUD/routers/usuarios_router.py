@@ -1,15 +1,24 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 import uuid
-from models.users_model import Crear_usuario, EditarUsuario
+from models.users_model import Crear_usuario, EditarUsuario, LoginUsuario
+from passlib.context import CryptContext
 
 usuarios_list = []
 usuarios_route = APIRouter()
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
 
 @usuarios_route.post('/agregar_usuario', tags=["Usuarios"], status_code=status.HTTP_201_CREATED, response_description="Crea un nuevo usuario")
 async def create_usuario(usuario: Crear_usuario) -> Crear_usuario:
     try:
         usuario.id = str(uuid.uuid4()) 
+        usuario.contraseña = hash_password(usuario.contraseña)
         usuarios_list.append(usuario)
         content = usuario.model_dump()
         return JSONResponse(content=content, status_code=status.HTTP_201_CREATED)
@@ -21,6 +30,18 @@ async def create_usuario(usuario: Crear_usuario) -> Crear_usuario:
 @usuarios_route.options('/agregar_usuario', tags=["Usuarios"])
 async def options_usuario():
     return JSONResponse(content={"allow": "POST, OPTIONS"}, status_code=status.HTTP_200_OK)
+
+@usuarios_route.post('/login_usuario', tags=["Auth"], status_code=status.HTTP_200_OK, response_description="User login")
+async def login_usuario(data: LoginUsuario):
+    try:
+        for usuario in usuarios_list:
+            if usuario.usuario == data.usuario:
+                if verify_password(data.contraseña, usuario.contraseña):
+                    usuario_data = usuario.model_dump()  
+                    return JSONResponse(content={"message": "Login successful", "usuario": usuario_data}, status_code=status.HTTP_200_OK)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 @usuarios_route.get('/obtener_usuarios', tags=["Usuarios"], status_code=status.HTTP_200_OK, response_description="Obtener usuarios registrados")
 async def obtener_usuario():

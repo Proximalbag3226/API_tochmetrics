@@ -6,6 +6,8 @@ from routers.usuarios_router import *
 from routers.estadisticas_router import *
 from utils.error_handler import *
 from routers.reportes_router import *
+from routers.img_router import *
+from routers.ligas_router import *
 
 app = FastAPI()
 
@@ -53,3 +55,5 @@ app.include_router(prefix='/usuarios', router=usuarios_route)
 app.include_router(prefix='/partidos', router=partidos_route)
 app.include_router(prefix='/estadisticas', router=estadisticas_route)
 app.include_router(prefix='/reportes', router=reportes_route)
+app.include_router(prefix='/imagenes', router=images_router)
+app.include_router(prefix='/ligas', router=ligas_route)
